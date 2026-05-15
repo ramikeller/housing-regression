@@ -33,7 +33,7 @@ impl Normalizer {
     // Compute min/max from the training rows (before normalization).
     pub fn from_rows(rows: &[HousingRow]) -> Self {
         let mut mins = [f64::MAX; 9];
-        let mut maxs = [f64::MIN; 9];
+        let mut maxs = [f64::NEG_INFINITY; 9];
 
         for row in rows {
             for i in 0..8 {
