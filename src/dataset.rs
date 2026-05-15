@@ -13,7 +13,8 @@ pub struct HousingRecord {
     pub households: f64,
     pub median_income: f64,
     pub median_house_value: f64,
-    pub ocean_proximity: String, // text column — we'll ignore it for now
+    #[serde(rename = "ocean_proximity")]
+    pub _ocean_proximity: String, // text column — we'll ignore it for now
 }
 
 // A cleaned row with all 8 numeric features and the target value.
