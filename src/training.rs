@@ -5,7 +5,7 @@ use burn::{
 };
 use rand::seq::SliceRandom;
 
-use crate::dataset::HousingRow;
+use crate::dataset::{HousingRow, Normalizer};
 use crate::model::LinearRegression;
 
 // A batch of data converted to tensors, ready for the GPU.
@@ -147,4 +147,33 @@ pub fn evaluate<B: Backend>(
     }
 
     (mse_sum / n_batches as f64, mae_sum / n_batches as f64)
+}
+
+// Predicts the house price in dollars for a single set of raw feature values.
+// The features must be in the same order as the training data:
+//   [longitude, latitude, housing_median_age, total_rooms, total_bedrooms,
+//    population, households, median_income]
+pub fn predict<B: Backend>(
+    model: &LinearRegression<B>,
+    normalizer: &Normalizer,
+    raw_features: [f64; 8],
+    device: &B::Device,
+) -> f64 {
+    // Normalize the input features using the training set's min/max.
+    let row = HousingRow { features: raw_features, target: 0.0 };
+    let normalized = normalizer.normalize(&row);
+
+    let input = Tensor::<B, 1>::from_floats(
+        normalized.features.map(|v| v as f32).as_slice(),
+        device,
+    )
+    .reshape([1, 8]); // shape [1, 8]: a batch of one house
+
+    let output = model.forward(input); // shape [1, 1]
+    let normalized_prediction = loss_scalar(output.mean()) as f64;
+
+    // Reverse the min-max scaling to get the dollar value.
+    let target_min = normalizer.mins[8];
+    let target_max = normalizer.maxs[8];
+    normalized_prediction * (target_max - target_min) + target_min
 }

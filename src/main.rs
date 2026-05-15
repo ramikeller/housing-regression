@@ -33,4 +33,12 @@ fn main() {
     println!("\n--- Final test evaluation ---");
     println!("RMSE: ${:.0}", rmse_dollars);
     println!("MAE:  ${:.0}", mae_dollars);
+
+    // Sample inference: a house in San Francisco (near the bay).
+    // [longitude, latitude, age, total_rooms, total_bedrooms,
+    //  population, households, median_income]
+    let sample = [-122.4, 37.75, 20.0, 2000.0, 400.0, 1000.0, 380.0, 5.5];
+    let price = training::predict(&model, &normalizer, sample, &device);
+    println!("\n--- Sample prediction ---");
+    println!("Predicted house value: ${:.0}", price);
 }
