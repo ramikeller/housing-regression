@@ -1,5 +1,6 @@
 mod dataset;
 mod model;
+mod training;
 
 use burn::backend::Wgpu;
 use model::LinearRegressionConfig;
