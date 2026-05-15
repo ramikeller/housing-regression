@@ -13,3 +13,6 @@ csv = "1.4"
 
 # Serde lets us deserialize a CSV row directly into a Rust struct
 serde = { version = "1", features = ["derive"] }
+
+# Random shuffling of training batches each epoch
+rand = "0.8"
