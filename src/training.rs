@@ -123,3 +123,28 @@ pub fn train<B: AutodiffBackend>(
 
     model
 }
+
+// Evaluates the model on a dataset and returns (mse, mae) in normalized space.
+// Multiply by the target range to convert to dollars.
+pub fn evaluate<B: Backend>(
+    model: &LinearRegression<B>,
+    data: &[HousingRow],
+    device: &B::Device,
+    batch_size: usize,
+) -> (f64, f64) {
+    let batcher = HousingBatcher::<B>::new(device.clone());
+    let mut mse_sum = 0.0f64;
+    let mut mae_sum = 0.0f64;
+    let mut n_batches = 0usize;
+
+    for chunk in data.chunks(batch_size) {
+        let batch = batcher.batch(chunk.to_vec());
+        let predictions = model.forward(batch.features);
+        let diff = predictions - batch.targets;
+        mse_sum += loss_scalar(diff.clone().powf_scalar(2.0).mean()) as f64;
+        mae_sum += loss_scalar(diff.abs().mean()) as f64;
+        n_batches += 1;
+    }
+
+    (mse_sum / n_batches as f64, mae_sum / n_batches as f64)
+}

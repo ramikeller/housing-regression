@@ -6,7 +6,7 @@ use burn::backend::{Autodiff, Wgpu};
 use model::LinearRegressionConfig;
 
 fn main() {
-    let (train, test, _normalizer) = dataset::load("data/housing.csv");
+    let (train, test, normalizer) = dataset::load("data/housing.csv");
     println!("Train rows: {}  Test rows: {}", train.len(), test.len());
 
     // Autodiff<Wgpu> = GPU backend (Metal on M4) with automatic differentiation.
@@ -15,7 +15,7 @@ fn main() {
 
     let model = LinearRegressionConfig::new(8, 1).init::<Backend>(&device);
 
-    let _model = training::train(
+    let model = training::train(
         model,
         &train,
         &test,
@@ -24,4 +24,13 @@ fn main() {
         32,    // batch_size
         0.001, // learning_rate
     );
+
+    // Convert normalized errors back to dollars using the target range.
+    let target_range = (normalizer.maxs[8] - normalizer.mins[8]) as f64;
+    let (mse, mae) = training::evaluate(&model, &test, &device, 32);
+    let rmse_dollars = mse.sqrt() * target_range;
+    let mae_dollars = mae * target_range;
+    println!("\n--- Final test evaluation ---");
+    println!("RMSE: ${:.0}", rmse_dollars);
+    println!("MAE:  ${:.0}", mae_dollars);
 }
