@@ -1,5 +1,5 @@
 use burn::{
-    optim::{AdamConfig, GradientsParams, Optimizer},
+    optim::{decay::WeightDecayConfig, AdamConfig, GradientsParams, Optimizer},
     prelude::*,
     tensor::backend::AutodiffBackend,
 };
@@ -74,7 +74,11 @@ pub fn train<B: AutodiffBackend>(
     batch_size: usize,
     learning_rate: f64,
 ) -> MLP<B> {
-    let mut optimizer = AdamConfig::new().init();
+    // L2 regularisation via weight decay — penalises large weights to
+    // reduce overfitting. λ=0.001 is a common starting value.
+    let mut optimizer = AdamConfig::new()
+        .with_weight_decay(Some(WeightDecayConfig::new(0.001)))
+        .init();
     let batcher = HousingBatcher::<B>::new(device.clone());
     let mut rng = StdRng::seed_from_u64(42);
 

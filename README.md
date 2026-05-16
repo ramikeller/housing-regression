@@ -24,16 +24,16 @@ See [data/README.md](data/README.md) for the full column descriptions and data s
 
 3-layer MLP: `Linear(8→64) → ReLU → Linear(64→32) → ReLU → Linear(32→1)`
 
-2,689 trainable parameters. Trained with Adam optimizer, MSE loss, 100 epochs, batch size 32, learning rate 0.001. Random seed 42 is fixed for reproducibility.
+2,689 trainable parameters. Trained with Adam optimizer (L2 weight decay λ=0.001), MSE loss, 100 epochs, batch size 32, learning rate 0.001. Random seed 42 is fixed for reproducibility.
 
 ## Results
 
 | Metric | Value |
 |--------|-------|
-| Test RMSE | ~$73,000 |
-| Test MAE  | ~$52,000 |
+| Test RMSE | ~$64,000 |
+| Test MAE  | ~$47,000 |
 
-The 3-layer model shows slight overfitting (train MSE 0.011 vs test MSE 0.022) — it memorises training data better than it generalises. This is a known trade-off when adding capacity without regularisation.
+L2 regularisation (weight decay) closed the train/test gap from 0.011/0.022 to 0.017/0.018, eliminating overfitting and improving MAE from ~$52k to ~$47k.
 
 ## Hardware
 
