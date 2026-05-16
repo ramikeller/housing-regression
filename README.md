@@ -4,7 +4,7 @@ A 3-layer MLP built in Rust using the [burn](https://github.com/tracel-ai/burn) 
 
 ## Goal
 
-A learning project for understanding ML model training fundamentals: data loading, normalization, model definition, loss functions, GPU-accelerated training, and inference.
+A learning project for understanding ML model training fundamentals: data loading, normalization, model definition, loss functions, regularisation, GPU-accelerated training, and inference.
 
 ## Dataset
 
