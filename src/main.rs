@@ -16,6 +16,10 @@ struct Args {
 }
 
 fn run<B: AutodiffBackend>(device: B::Device) {
+    // Fix the random seed so weight initialisation and batch shuffling
+    // are identical across runs, making results reproducible.
+    B::seed(&device, 42);
+
     let (train, test, normalizer) = dataset::load("data/housing.csv");
     println!("Train rows: {}  Test rows: {}", train.len(), test.len());
 

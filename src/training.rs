@@ -3,7 +3,7 @@ use burn::{
     prelude::*,
     tensor::backend::AutodiffBackend,
 };
-use rand::seq::SliceRandom;
+use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
 
 use crate::dataset::{HousingRow, Normalizer};
 use crate::model::MLP;
@@ -76,7 +76,7 @@ pub fn train<B: AutodiffBackend>(
 ) -> MLP<B> {
     let mut optimizer = AdamConfig::new().init();
     let batcher = HousingBatcher::<B>::new(device.clone());
-    let mut rng = rand::thread_rng();
+    let mut rng = StdRng::seed_from_u64(42);
 
     for epoch in 1..=num_epochs {
         // Shuffle training indices so each epoch sees a different batch order.
