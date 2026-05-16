@@ -1,6 +1,6 @@
 # housing-regression
 
-A linear regression model built in Rust using the [burn](https://github.com/tracel-ai/burn) deep learning framework. It predicts California median house prices from the 1990 US Census dataset.
+A 2-layer MLP built in Rust using the [burn](https://github.com/tracel-ai/burn) deep learning framework. It predicts California median house prices from the 1990 US Census dataset.
 
 ## Goal
 
@@ -20,45 +20,59 @@ Target: median house value (USD).
 
 See [data/README.md](data/README.md) for the full column descriptions and data source.
 
-## Hardware
+## Model
 
-Targets the Apple M4 GPU via burn's `wgpu` backend (Metal). The device resolves to `BestAvailable` at runtime, which selects the Metal GPU automatically.
+2-layer MLP: `Linear(8→64) → ReLU → Linear(64→1)`
+
+577 trainable parameters. Trained with Adam optimizer, MSE loss, 100 epochs, batch size 32, learning rate 0.001.
 
 ## Results
 
-After 100 epochs (batch size 32, Adam optimizer, learning rate 0.001):
-
 | Metric | Value |
 |--------|-------|
-| Test RMSE | ~$67,000 |
-| Test MAE  | ~$49,000 |
+| Test RMSE | ~$66,000 |
+| Test MAE  | ~$47,000 |
 
-The MAE means predictions are typically off by ~$49k. This is the practical limit of linear regression on this dataset — the relationship between location and price is non-linear, which a more complex model would capture better.
+Predictions are typically off by ~$47k. The main limitation is the non-linear relationship between location and price, which a deeper model would capture better.
+
+## Hardware
+
+Supports both GPU and CPU backends:
+
+| Backend | Device | Runtime (100 epochs) |
+|---------|--------|----------------------|
+| `wgpu` (default) | M4 GPU via Metal | ~114s |
+| `ndarray` | CPU (all cores) | ~6s |
+
+For this model size, CPU is faster — GPU overhead dominates at small scales.
+
+## Running
+
+```bash
+cargo run --release                    # GPU (default)
+cargo run --release -- --device cpu   # CPU
+cargo run --release -- --help         # show options
+```
+
+Output includes per-epoch train/test MSE, final RMSE and MAE in dollars, and a sample house price prediction.
 
 ## Project structure
 
 ```
 src/
-  main.rs       — entry point: training, evaluation, and sample inference
+  main.rs       — entry point: CLI args, training, evaluation, inference
   dataset.rs    — CSV loading, cleaning, normalization, train/test split
-  model.rs      — linear regression model definition (8 inputs, 1 output)
+  model.rs      — 2-layer MLP definition (8 → 64 → 1)
   training.rs   — batcher, MSE loss, training loop, evaluation, inference
 data/
   housing.csv   — raw dataset
   README.md     — data source and column descriptions
 ```
 
-## Running
-
-```bash
-cargo run --release
-```
-
-Output includes per-epoch train/test MSE, final RMSE and MAE in dollars, and a sample house price prediction.
-
 ## Dependencies
 
-- [burn](https://crates.io/crates/burn) 0.21 — ML framework (wgpu + autodiff + train)
+- [burn](https://crates.io/crates/burn) 0.21 — ML framework (wgpu + ndarray + autodiff + train)
 - [csv](https://crates.io/crates/csv) 1.4 — CSV parsing
 - [serde](https://crates.io/crates/serde) 1 — deserialization
 - [rand](https://crates.io/crates/rand) 0.8 — batch shuffling
+- [clap](https://crates.io/crates/clap) 4 — CLI argument parsing
