@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 # The burn ML framework. `wgpu` targets Metal on macOS (your M4 GPU).
 # `autodiff` enables gradient computation. `train` gives us the Learner harness.
-burn = { version = "0.21", features = ["wgpu", "autodiff", "train"] }
+burn = { version = "0.21", features = ["wgpu", "autodiff", "train", "ndarray"] }
 
 # CSV parsing
 csv = "1.4"
@@ -16,3 +16,6 @@ serde = { version = "1", features = ["derive"] }
 
 # Random shuffling of training batches each epoch
 rand = "0.8"
+
+# Command-line argument parsing
+clap = { version = "4", features = ["derive"] }
