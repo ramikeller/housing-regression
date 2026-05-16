@@ -3,7 +3,7 @@ mod model;
 mod training;
 
 use burn::backend::{Autodiff, Wgpu};
-use model::LinearRegressionConfig;
+use model::MLPConfig;
 
 fn main() {
     let (train, test, normalizer) = dataset::load("data/housing.csv");
@@ -13,7 +13,7 @@ fn main() {
     type Backend = Autodiff<Wgpu>;
     let device = Default::default();
 
-    let model = LinearRegressionConfig::new(8, 1).init::<Backend>(&device);
+    let model = MLPConfig::new(8, 64, 1).init::<Backend>(&device);
 
     let model = training::train(
         model,

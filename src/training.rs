@@ -6,7 +6,7 @@ use burn::{
 use rand::seq::SliceRandom;
 
 use crate::dataset::{HousingRow, Normalizer};
-use crate::model::LinearRegression;
+use crate::model::MLP;
 
 // A batch of data converted to tensors, ready for the GPU.
 // features shape: [batch_size, 8]
@@ -50,7 +50,7 @@ impl<B: Backend> HousingBatcher<B> {
 
 // Runs one forward pass and returns the MSE loss as a 1D
 // single-element tensor.
-pub fn mse_loss<B: Backend>(model: &LinearRegression<B>, batch: &HousingBatch<B>) -> Tensor<B, 1> {
+pub fn mse_loss<B: Backend>(model: &MLP<B>, batch: &HousingBatch<B>) -> Tensor<B, 1> {
     let predictions = model.forward(batch.features.clone());
     let diff = predictions - batch.targets.clone();
     diff.powf_scalar(2.0).mean()
@@ -66,14 +66,14 @@ fn loss_scalar<B: Backend>(loss: Tensor<B, 1>) -> f32 {
 // Runs the full training loop and returns the trained model.
 // Uses Adam optimiser and reports train + test MSE after each epoch.
 pub fn train<B: AutodiffBackend>(
-    mut model: LinearRegression<B>,
+    mut model: MLP<B>,
     train_data: &[HousingRow],
     test_data: &[HousingRow],
     device: &B::Device,
     num_epochs: usize,
     batch_size: usize,
     learning_rate: f64,
-) -> LinearRegression<B> {
+) -> MLP<B> {
     let mut optimizer = AdamConfig::new().init();
     let batcher = HousingBatcher::<B>::new(device.clone());
     let mut rng = rand::thread_rng();
@@ -127,7 +127,7 @@ pub fn train<B: AutodiffBackend>(
 // Evaluates the model on a dataset and returns (mse, mae) in normalized space.
 // Multiply by the target range to convert to dollars.
 pub fn evaluate<B: Backend>(
-    model: &LinearRegression<B>,
+    model: &MLP<B>,
     data: &[HousingRow],
     device: &B::Device,
     batch_size: usize,
@@ -154,7 +154,7 @@ pub fn evaluate<B: Backend>(
 //   [longitude, latitude, housing_median_age, total_rooms, total_bedrooms,
 //    population, households, median_income]
 pub fn predict<B: Backend>(
-    model: &LinearRegression<B>,
+    model: &MLP<B>,
     normalizer: &Normalizer,
     raw_features: [f64; 8],
     device: &B::Device,
