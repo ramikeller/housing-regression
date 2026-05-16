@@ -1,6 +1,6 @@
 # housing-regression
 
-A 2-layer MLP built in Rust using the [burn](https://github.com/tracel-ai/burn) deep learning framework. It predicts California median house prices from the 1990 US Census dataset.
+A 3-layer MLP built in Rust using the [burn](https://github.com/tracel-ai/burn) deep learning framework. It predicts California median house prices from the 1990 US Census dataset.
 
 ## Goal
 
@@ -22,18 +22,18 @@ See [data/README.md](data/README.md) for the full column descriptions and data s
 
 ## Model
 
-2-layer MLP: `Linear(8→64) → ReLU → Linear(64→1)`
+3-layer MLP: `Linear(8→64) → ReLU → Linear(64→32) → ReLU → Linear(32→1)`
 
-577 trainable parameters. Trained with Adam optimizer, MSE loss, 100 epochs, batch size 32, learning rate 0.001.
+2,689 trainable parameters. Trained with Adam optimizer, MSE loss, 100 epochs, batch size 32, learning rate 0.001. Random seed 42 is fixed for reproducibility.
 
 ## Results
 
 | Metric | Value |
 |--------|-------|
-| Test RMSE | ~$66,000 |
-| Test MAE  | ~$47,000 |
+| Test RMSE | ~$73,000 |
+| Test MAE  | ~$52,000 |
 
-Predictions are typically off by ~$47k. The main limitation is the non-linear relationship between location and price, which a deeper model would capture better.
+The 3-layer model shows slight overfitting (train MSE 0.011 vs test MSE 0.022) — it memorises training data better than it generalises. This is a known trade-off when adding capacity without regularisation.
 
 ## Hardware
 
@@ -49,7 +49,7 @@ For this model size, CPU is faster — GPU overhead dominates at small scales.
 ## Running
 
 ```bash
-cargo run --release                    # GPU (default)
+cargo run --release                   # GPU (default)
 cargo run --release -- --device cpu   # CPU
 cargo run --release -- --help         # show options
 ```
@@ -62,7 +62,7 @@ Output includes per-epoch train/test MSE, final RMSE and MAE in dollars, and a s
 src/
   main.rs       — entry point: CLI args, training, evaluation, inference
   dataset.rs    — CSV loading, cleaning, normalization, train/test split
-  model.rs      — 2-layer MLP definition (8 → 64 → 1)
+  model.rs      — 3-layer MLP definition (8 → 64 → 32 → 1)
   training.rs   — batcher, MSE loss, training loop, evaluation, inference
 data/
   housing.csv   — raw dataset

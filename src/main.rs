@@ -23,7 +23,7 @@ fn run<B: AutodiffBackend>(device: B::Device) {
     let (train, test, normalizer) = dataset::load("data/housing.csv");
     println!("Train rows: {}  Test rows: {}", train.len(), test.len());
 
-    let model = MLPConfig::new(8, 64, 1).init::<B>(&device);
+    let model = MLPConfig::new(8, 64, 32, 1).init::<B>(&device);
 
     let model = training::train(
         model,
